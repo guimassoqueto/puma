@@ -1,7 +1,7 @@
 from app.domain.model import Item
 from app.logging.logger import getLogger
 from selectolax.parser import HTMLParser
-from app.infra.selectolax.helpers import (get_image_url, get_afiliate_link)
+from app.infra.selectolax.helpers import (get_image_url, encode_url)
 import re
 
 
@@ -41,7 +41,7 @@ class Selectolax:
         url = item.css_first(".product-item__img-w").attrs["href"] # anchor tag with product's url
         image_url = get_image_url(url)
         category = f"Puma Outlet {title}"
-        affiliate_url = get_afiliate_link(url)
+        # affiliate_url = get_afiliate_link(url)
 
         price = float(item.css_first('[data-price-type="finalPrice"]').attrs["data-price-amount"])
         previous_price = float(item.css_first('[data-price-type="oldPrice"]').attrs["data-price-amount"])
@@ -51,12 +51,14 @@ class Selectolax:
         product = Item(
           url=url,
           image_url=image_url,
-          afiliate_url=affiliate_url,
+          afiliate_url=encode_url(url),
           title=title,
           category=category,
           price=price,
           previous_price=previous_price,
-          discount=discount
+          discount=discount,
+          reviews=0,
+          free_shipping=False
         )
         products.append(product.model_dump())
 
