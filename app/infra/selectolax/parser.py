@@ -1,7 +1,7 @@
 from app.domain.model import Item
 from app.logging.logger import getLogger
 from selectolax.parser import HTMLParser
-from app.infra.selectolax.helpers import (get_image_url, encode_url)
+from app.infra.selectolax.helpers import (get_image_url, encode_url, get_afiliate_link)
 import re
 
 
@@ -37,21 +37,25 @@ class Selectolax:
       try:
         title = item.css_first(".product-item__name").text().strip()
         if not re.search('tênis', title, re.IGNORECASE): continue
+        if re.search('juvenil', title, re.IGNORECASE): continue
+        if re.search('bebê', title, re.IGNORECASE): continue
+        if re.search('kids', title, re.IGNORECASE): continue
+        title = title.replace("Tênis", "Tênis Puma")
         
         url = item.css_first(".product-item__img-w").attrs["href"] # anchor tag with product's url
         image_url = get_image_url(url)
         category = f"Puma Outlet {title}"
-        # affiliate_url = get_afiliate_link(url)
+        affiliate_url = get_afiliate_link(url)
 
         price = float(item.css_first('[data-price-type="finalPrice"]').attrs["data-price-amount"])
         previous_price = float(item.css_first('[data-price-type="oldPrice"]').attrs["data-price-amount"])
         discount = round((1 - (price / previous_price)) * 100)
-        if discount < 40: continue
+        if discount < 10: continue
 
         product = Item(
           url=url,
           image_url=image_url,
-          afiliate_url=encode_url(url),
+          afiliate_url=affiliate_url,
           title=title,
           category=category,
           price=price,
